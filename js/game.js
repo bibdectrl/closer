@@ -5,7 +5,7 @@ var loadState = {
    game.load.spritesheet("doors", "res/doors.png", 64, 32);
 
    // load monsters spritesheet
-   game.load.image("monster", "res/monster.png");
+   game.load.image("monster", "res/witch.png");
 
    // load player spritesheet
    game.load.image("player", "res/player.png");
@@ -53,8 +53,9 @@ var gameState = {
    // create enemies group
    this.enemies = game.add.group();
    this.enemies.enableBody = true;
-   this.enemies.createMultiple(100, "monster");
-   for (var i = 0; i < 100; i++){
+   var nEnemies = 10;
+   this.enemies.createMultiple(nEnemies, "monster");
+   for (var i = 0; i < nEnemies; i++){
      var monster = this.enemies.getFirstDead();
      monster.reset(game.rnd.between(0, 600), game.rnd.between(0, 2000));
    }
@@ -67,7 +68,7 @@ var gameState = {
    game.physics.arcade.collide(this.enemies, this.layer);
    // check collisions between player and platforms
    game.physics.arcade.collide(this.player, this.layer);
-
+   game.physics.arcade.collide(this.player, this.enemies, function(){ console.log("hello");});
    // spawn monster logic
 
    // update monster logic
