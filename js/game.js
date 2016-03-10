@@ -28,7 +28,7 @@ var gameState = {
    game.stage.backgroundColor = '#787878';
    // start physics
    game.physics.startSystem(Phaser.Physics.ARCADE);
-   game.physics.arcade.gravity.y = 200;
+   game.physics.arcade.gravity.y = 300;
    // create map
    this.map = game.add.tilemap("world");
    // add tile images
@@ -56,8 +56,11 @@ var gameState = {
    var nEnemies = 10;
    this.enemies.createMultiple(nEnemies, "monster");
    for (var i = 0; i < nEnemies; i++){
-     var monster = this.enemies.getFirstDead();
-     monster.reset(game.rnd.between(0, 600), game.rnd.between(0, 2000));
+     var e = this.enemies.getFirstDead();
+     e.reset(game.rnd.between(0, 600), game.rnd.between(0, 2000));
+     e.body.immovable = true;
+     e.body.velocity.x = 100;
+     e.falling = true;
    }
    game.camera.follow(this.player);
 
@@ -65,13 +68,21 @@ var gameState = {
 
   update: function(){
    // check collisions between enemies and platforms
-   game.physics.arcade.collide(this.enemies, this.layer);
+   game.physics.arcade.collide(this.enemies, this.layer, function(e, l){  e.falling = false});
    // check collisions between player and platforms
-   game.physics.arcade.collide(this.player, this.layer);
-   game.physics.arcade.collide(this.player, this.enemies, function(){ console.log("hello");});
+   game.physics.arcade.collide(this.player, this.layer, function(p, l){ if (p.y > l.y) p.falling = false;});
+   game.physics.arcade.collide(this.player, this.enemies, function(p, e){ p.falling = false;});
    // spawn monster logic
 
    // update monster logic
+   this.enemies.forEach(function(enemy){
+     if (enemy.body.velocity.y > 0) { enemy.falling = true; };
+     if (! enemy.falling && (enemy.x < 0 || enemy.x > game.world.width - 32)){
+       enemy.body.velocity.x *= -1;
+     }
+ 
+   });
+  
 
    // handle input
    if (game.input.keyboard.isDown(Phaser.Keyboard.LEFT)){
@@ -83,8 +94,10 @@ var gameState = {
    else {
       this.player.body.velocity.x = 0;
    }
-   if (this.player.body.velocity.y == 0 && game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)){
-      this.player.body.velocity.y = -400;
+   //if (this.player.body.velocity.y == 0 && game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)){
+   if (! this.player.falling && this.player.body.velocity.y == 0 && game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)){
+      this.player.body.velocity.y = -350;
+      this.player.falling = true;
    }
   },
 
